@@ -62,15 +62,13 @@
             padding: 0;
         }
 
-        .link-list {
+        .admin-list {
             margin: 10px 0;
-            display: flex;
-            flex-direction: column;
+            padding: 0;
+            list-style-type: none;
         }
 
-        .link-list a {
-            text-decoration: none;
-            color: #007bff;
+        .admin-list li {
             margin-bottom: 10px;
         }
     </style>
@@ -89,10 +87,8 @@
     <!-- Tela de Seguir Contas -->
     <div class="container" id="follow">
         <h1>Siga Estas Contas</h1>
-        <div class="link-list">
-            <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
-            <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
-        </div>
+        <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
+        <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
         <button id="continue-button" disabled onclick="showScreen('login')">Continuar</button>
     </div>
 
@@ -114,6 +110,16 @@
         <button onclick="addVideo()">Adicionar Vídeo</button>
         <h2>Assistir Vídeos</h2>
         <div id="video-list"></div>
+        <button onclick="logout()">Sair</button>
+    </div>
+
+    <!-- Tela de Administração -->
+    <div class="container" id="admin">
+        <h1>Administração</h1>
+        <ul class="admin-list" id="user-list"></ul>
+        <h2>Adicionar Vídeo Grátis</h2>
+        <input type="url" id="admin-video-url" placeholder="Link do vídeo">
+        <button onclick="addFreeVideo()">Adicionar</button>
         <button onclick="logout()">Sair</button>
     </div>
 
@@ -144,6 +150,11 @@
         function loginUser() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
+
+            if (username === 'Danilo' && password === '12022005') {
+                showAdminPanel();
+                return;
+            }
 
             const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
 
@@ -183,8 +194,34 @@
             });
         }
 
-        // Habilitar o botão "Continuar" após seguir as contas
-        document.querySelectorAll('.link-list a').forEach(link => {
+        function showAdminPanel() {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
+
+            users.forEach((user, index) => {
+                const li = document.createElement('li');
+                li.textContent = `Usuário: ${user.username}, Moedas: ${user.coins}`;
+                userList.appendChild(li);
+            });
+
+            showScreen('admin');
+        }
+
+        function addFreeVideo() {
+            const videoUrl = document.getElementById('admin-video-url').value;
+
+            if (videoUrl) {
+                videos.push(videoUrl);
+                alert('Vídeo gratuito adicionado com sucesso!');
+                document.getElementById('admin-video-url').value = '';
+                updateVideoList();
+            } else {
+                alert('Insira um link válido!');
+            }
+        }
+
+        // Habilitar botão "Continuar" após seguir contas
+        document.querySelectorAll('#follow a').forEach(link => {
             link.addEventListener('click', () => {
                 document.getElementById('continue-button').disabled = false;
             });
