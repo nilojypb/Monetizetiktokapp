@@ -122,7 +122,7 @@
             <button type="submit" id="addVideoButton" disabled>Adicionar Link</button>
         </form>
         <div id="videoList"></div>
-        <button id="watchVideoButton" style="display:none;">Assistir Vídeo</button>
+        <button id="watchVideoButton" style="display: block;">Assistir Vídeo</button>
         <p id="coinDisplay" style="display:none;">Moedas: <span id="coinCount">0</span></p>
         <div id="otherVideos">
             <h3>Links de Outros Usuários</h3>
@@ -142,7 +142,7 @@
 
     <script>
         let followedLinks = new Set();
-        let registeredUsers = []; // Armazenar usuários registrados
+        let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || []; // Armazenar usuários registrados
         let videoLinks = []; // Armazenar links de vídeo por usuário
         let coins = 0;
         const adminUser = 'Danilo';
@@ -156,6 +156,7 @@
 
             // Adicionar usuário registrado
             registeredUsers.push({ username, email, password, videos: [], coins: 0 });
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
             alert('Usuário registrado: ' + username);
 
             // Mostrar a tela de seguir contas
@@ -193,27 +194,58 @@
 
                 // Habilitar o botão de adicionar vídeo se o usuário tiver moedas suficientes
                 document.getElementById('addVideoButton').disabled = user.coins < 50;
+                document.getElementById('coinCount').textContent = user.coins; // Atualiza a contagem de moedas
+                document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
             } else {
                 alert('Credenciais inválidas.'); // Mensagem de erro
             }
         };
 
-        document.getElementById('loginLink').onclick = function(event) {
+        document.getElementById('videoForm').onsubmit = function(event) {
             event.preventDefault();
-            document.getElementById('registrationContainer').style.display = 'none';
-            document.getElementById('loginContainer').style.display = 'block'; // Mostra a tela de login
+            const videoLink = document.getElementById('videoLink').value;
+            const userIndex = registeredUsers.findIndex(user => (user.username === document.getElementById('loginEmail').value || user.email === document.getElementById('loginEmail').value));
+            
+            if (userIndex !== -1) {
+                // Adicionar link de vídeo ao usuário
+                registeredUsers[userIndex].videos.push(videoLink);
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
+                alert('Link de vídeo adicionado!');
+                document.getElementById('videoLink').value = ''; // Limpa o campo de entrada
+                displayVideos(userIndex);
+            }
         };
 
-        document.getElementById('registerLink').onclick = function(event) {
-            event.preventDefault();
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('registrationContainer').style.display = 'block'; // Volta para a tela de registro
+        function displayVideos(userIndex) {
+            const videoList = document.getElementById('videoList');
+            videoList.innerHTML = '';
+            if (registeredUsers[userIndex].videos.length > 0) {
+                registeredUsers[userIndex].videos.forEach(video => {
+                    const videoItem = document.createElement('div');
+                    videoItem.textContent = video;
+                    videoList.appendChild(videoItem);
+                });
+                document.getElementById('watchVideoButton').style.display = 'block'; // Mostra o botão de assistir vídeo
+            }
+        }
+
+        document.getElementById('watchVideoButton').onclick = function() {
+            const userIndex = registeredUsers.findIndex(user => (user.username === document.getElementById('loginEmail').value || user.email === document.getElementById('loginEmail').value));
+            if (registeredUsers[userIndex].videos.length > 0) {
+                const videoLink = registeredUsers[userIndex].videos[0]; // Assumindo que você quer assistir ao primeiro vídeo
+                window.open(videoLink, '_blank'); // Redireciona para o link do vídeo
+                registeredUsers[userIndex].coins += 10; // Adiciona moedas ao usuário
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
+                document.getElementById('coinCount').textContent = registeredUsers[userIndex].coins; // Atualiza a contagem de moedas
+                displayVideos(userIndex); // Atualiza a lista de vídeos
+            } else {
+                alert('Não há links de vídeo disponíveis.'); // Mensagem de alerta
+            }
         };
 
-        document.getElementById('adminLink').onclick = function(event) {
-            event.preventDefault();
+        document.getElementById('adminLink').onclick = function() {
             document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminContainer').style.display = 'block'; // Mostra a tela de login do admin
+            document.getElementById('adminContainer').style.display = 'block'; // Mostrar a tela de login de admin
         };
 
         document.getElementById('adminForm').onsubmit = function(event) {
@@ -221,83 +253,54 @@
             const adminUserInput = document.getElementById('adminUser').value;
             const adminPassInput = document.getElementById('adminPass').value;
 
-            // Verifica as credenciais do administrador
+            // Verifica as credenciais do admin
             if (adminUserInput === adminUser && adminPassInput === adminPassword) {
-                alert('Login de administrador bem-sucedido!');
+                alert('Login de admin bem-sucedido!');
                 document.getElementById('adminContainer').style.display = 'none';
-
-                // Exibir lista de usuários
-                const userList = document.getElementById('userList');
-                userList.innerHTML = ''; // Limpa a lista existente
-                registeredUsers.forEach(user => {
-                    userList.innerHTML += `<div>${user.username} - Moedas: ${user.coins} <button onclick="deleteUser('${user.username}')">Excluir</button></div>`;
-                });
-                userList.style.display = 'block';
+                displayRegisteredUsers();
             } else {
-                alert('Credenciais de administrador inválidas.');
+                alert('Credenciais de admin inválidas.');
             }
         };
 
-        function deleteUser(username) {
-            registeredUsers = registeredUsers.filter(user => user.username !== username); // Excluir o usuário
-            alert('Usuário excluído: ' + username);
-            // Atualiza a lista de usuários
-            document.getElementById('userList').innerHTML = '';
+        function displayRegisteredUsers() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
             registeredUsers.forEach(user => {
-                document.getElementById('userList').innerHTML += `<div>${user.username} - Moedas: ${user.coins} <button onclick="deleteUser('${user.username}')">Excluir</button></div>`;
+                const userItem = document.createElement('div');
+                userItem.textContent = `Usuário: ${user.username}, E-mail: ${user.email}, Moedas: ${user.coins}`;
+                userList.appendChild(userItem);
             });
+            userList.style.display = 'block';
         }
-
-        document.getElementById('videoForm').onsubmit = function(event) {
-            event.preventDefault();
-            const videoLink = document.getElementById('videoLink').value;
-            const currentUser = registeredUsers.find(user => user.username === document.getElementById('loginEmail').value); // Obter o usuário atual
-
-            if (currentUser.coins >= 50) { // Verifica se o usuário tem moedas suficientes
-                currentUser.videos.push(videoLink);
-                alert('Link de vídeo adicionado!');
-
-                // Atualizar lista de vídeos
-                displayOtherUsersVideos(currentUser);
-                document.getElementById('videoLink').value = ''; // Limpar campo de entrada
-            } else {
-                alert('Você precisa de pelo menos 50 moedas para adicionar um link.');
-            }
-        };
 
         function displayOtherUsersVideos(currentUser) {
             const otherUsersVideos = document.getElementById('otherUsersVideos');
-            otherUsersVideos.innerHTML = ''; // Limpar lista existente
-
+            otherUsersVideos.innerHTML = '';
             registeredUsers.forEach(user => {
-                if (user !== currentUser) { // Exibir vídeos apenas de outros usuários
+                if (user !== currentUser) {
                     user.videos.forEach(video => {
                         const videoItem = document.createElement('div');
-                        videoItem.innerHTML = `<a href="${video}" target="_blank">${video}</a> <button onclick="watchVideo('${video}')">Assistir</button>`;
+                        videoItem.textContent = `Usuário: ${user.username}, Link: ${video}`;
                         otherUsersVideos.appendChild(videoItem);
                     });
                 }
             });
         }
 
-        function watchVideo(link) {
-            // Incrementa as moedas
-            coins += 10;
-            document.getElementById('coinCount').innerText = coins;
-            document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
+        // Redireciona para a tela de login quando clicado
+        document.getElementById('loginLink').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('registrationContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+        };
 
-            // Remove o link do vídeo da lista
-            const otherUsersVideos = document.getElementById('otherUsersVideos');
-            for (let i = 0; i < otherUsersVideos.children.length; i++) {
-                if (otherUsersVideos.children[i].querySelector('a').href === link) {
-                    otherUsersVideos.removeChild(otherUsersVideos.children[i]);
-                    break;
-                }
-            }
-
-            // Redireciona para o link do vídeo
-            window.open(link, '_blank');
-        }
+        // Redireciona para a tela de registro quando clicado
+        document.getElementById('registerLink').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registrationContainer').style.display = 'block';
+        };
     </script>
 </body>
 </html>
