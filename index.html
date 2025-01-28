@@ -53,11 +53,6 @@
             cursor: not-allowed;
         }
 
-        .admin-actions button {
-            margin: 5px 0;
-            width: auto;
-        }
-
         .link-button {
             background: none;
             border: none;
@@ -67,12 +62,13 @@
             padding: 0;
         }
 
-        .user-list, .video-list {
-            margin: 10px 0;
-        }
-
         .user-list div, .video-list div {
             margin-bottom: 10px;
+        }
+
+        .admin-actions button {
+            margin: 5px 0;
+            width: auto;
         }
     </style>
 </head>
@@ -87,6 +83,16 @@
         <p>Já tem uma conta? <button class="link-button" onclick="showScreen('login')">Faça login aqui</button>.</p>
     </div>
 
+    <!-- Tela de Seguir Contas -->
+    <div class="container" id="follow">
+        <h1>Siga Estas Contas</h1>
+        <div class="link-list">
+            <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
+            <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
+        </div>
+        <button id="continue-button" disabled onclick="showScreen('login')">Continuar</button>
+    </div>
+
     <!-- Tela de Login -->
     <div class="container" id="login">
         <h1>Login</h1>
@@ -95,6 +101,17 @@
         <button onclick="loginUser()">Entrar</button>
         <p>Não tem uma conta? <button class="link-button" onclick="showScreen('register')">Registre-se aqui</button>.</p>
         <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
+    </div>
+
+    <!-- Tela de Adicionar e Assistir Vídeos -->
+    <div class="container" id="main">
+        <h1>Bem-vindo!</h1>
+        <h2>Adicionar Vídeo</h2>
+        <input type="url" id="video-url" placeholder="Link do vídeo">
+        <button onclick="addVideo()">Adicionar Vídeo</button>
+        <h2>Assistir Vídeos</h2>
+        <div id="video-list"></div>
+        <button onclick="logout()">Sair</button>
     </div>
 
     <!-- Tela de Administração -->
@@ -129,7 +146,7 @@
             if (username && email && password) {
                 users.push({ username, email, password, coins: 0 });
                 alert('Usuário registrado com sucesso!');
-                showScreen('login');
+                showScreen('follow');
             } else {
                 alert('Preencha todos os campos!');
             }
@@ -160,6 +177,29 @@
             showScreen('login');
         }
 
+        function addVideo() {
+            const videoUrl = document.getElementById('video-url').value;
+
+            if (videoUrl) {
+                videos.push(videoUrl);
+                alert('Vídeo adicionado com sucesso!');
+                document.getElementById('video-url').value = '';
+                updateVideoList();
+            } else {
+                alert('Insira um link válido!');
+            }
+        }
+
+        function updateVideoList() {
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = '';
+            videos.forEach(video => {
+                const videoDiv = document.createElement('div');
+                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
+                videoList.appendChild(videoDiv);
+            });
+        }
+
         function loadAdminData() {
             const userList = document.getElementById('user-list');
             userList.innerHTML = '';
@@ -175,7 +215,7 @@
 
             const videoList = document.getElementById('admin-video-list');
             videoList.innerHTML = '';
-            videos.forEach((video, index) => {
+            videos.forEach(video => {
                 const videoDiv = document.createElement('div');
                 videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
                 videoList.appendChild(videoDiv);
@@ -198,6 +238,14 @@
                 alert('Valor inválido!');
             }
         }
+
+        document.querySelectorAll('.link-list a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('continue-button').disabled = false;
+            });
+        });
+
+        showScreen('register');
     </script>
 </body>
 </html>
