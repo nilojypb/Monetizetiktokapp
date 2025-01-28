@@ -53,127 +53,151 @@
             cursor: not-allowed;
         }
 
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
+        .admin-actions button {
+            margin: 5px 0;
+            width: auto;
         }
 
-        .admin-table th, .admin-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+        .link-button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
         }
 
-        .admin-table th {
-            background-color: #007bff;
-            color: white;
+        .user-list, .video-list {
+            margin: 10px 0;
+        }
+
+        .user-list div, .video-list div {
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Login do Administrador -->
-    <div class="container" id="admin-login">
-        <h1>Login do Administrador</h1>
-        <input type="text" id="admin-username" placeholder="Usuário" required>
-        <input type="password" id="admin-password" placeholder="Senha" required>
-        <button onclick="loginAdmin()">Entrar</button>
-        <p id="admin-login-error" style="color: red; display: none;">Credenciais inválidas.</p>
+    <!-- Tela de Registro -->
+    <div class="container" id="register">
+        <h1>Registrar</h1>
+        <input type="text" id="reg-username" placeholder="Nome de usuário" required>
+        <input type="email" id="reg-email" placeholder="E-mail" required>
+        <input type="password" id="reg-password" placeholder="Senha" required>
+        <button onclick="registerUser()">Registrar</button>
+        <p>Já tem uma conta? <button class="link-button" onclick="showScreen('login')">Faça login aqui</button>.</p>
+    </div>
+
+    <!-- Tela de Login -->
+    <div class="container" id="login">
+        <h1>Login</h1>
+        <input type="text" id="login-username" placeholder="Usuário ou E-mail" required>
+        <input type="password" id="login-password" placeholder="Senha" required>
+        <button onclick="loginUser()">Entrar</button>
+        <p>Não tem uma conta? <button class="link-button" onclick="showScreen('register')">Registre-se aqui</button>.</p>
+        <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
     </div>
 
     <!-- Tela de Administração -->
-    <div class="container" id="admin-panel">
+    <div class="container" id="admin">
         <h1>Painel Administrativo</h1>
-        <h2>Usuários Registrados</h2>
-        <table class="admin-table" id="user-table">
-            <thead>
-                <tr>
-                    <th>Usuário</th>
-                    <th>E-mail</th>
-                    <th>Senha</th>
-                    <th>Moedas</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <button onclick="logoutAdmin()">Sair</button>
+        <div class="user-list" id="user-list">
+            <h2>Usuários Registrados</h2>
+            <!-- Lista de usuários será gerada aqui -->
+        </div>
+        <div class="video-list" id="admin-video-list">
+            <h2>Links de Vídeos</h2>
+            <!-- Lista de vídeos será gerada aqui -->
+        </div>
+        <button onclick="logout()">Sair</button>
     </div>
 
     <script>
         let users = [];
-        let videos = {};
-        let currentAdmin = false;
+        let videos = [];
+        let currentUser = null;
 
         function showScreen(screenId) {
             document.querySelectorAll('.container').forEach(screen => screen.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        function loginAdmin() {
-            const username = document.getElementById('admin-username').value;
-            const password = document.getElementById('admin-password').value;
+        function registerUser() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
 
-            if (username === 'Danilo' && password === '12022005') {
-                currentAdmin = true;
-                updateAdminTable();
-                showScreen('admin-panel');
+            if (username && email && password) {
+                users.push({ username, email, password, coins: 0 });
+                alert('Usuário registrado com sucesso!');
+                showScreen('login');
             } else {
-                document.getElementById('admin-login-error').style.display = 'block';
+                alert('Preencha todos os campos!');
             }
         }
 
-        function logoutAdmin() {
-            currentAdmin = false;
-            showScreen('admin-login');
+        function loginUser() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            if (username === "Danilo" && password === "12022005") {
+                showScreen('admin');
+                loadAdminData();
+                return;
+            }
+
+            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                showScreen('main');
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
         }
 
-        function updateAdminTable() {
-            const tableBody = document.querySelector('#user-table tbody');
-            tableBody.innerHTML = '';
+        function logout() {
+            currentUser = null;
+            showScreen('login');
+        }
 
+        function loadAdminData() {
+            const userList = document.getElementById('user-list');
+            userList.innerHTML = '';
             users.forEach((user, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${user.username}</td>
-                    <td>${user.email}</td>
-                    <td>${user.password}</td>
-                    <td>${user.coins}</td>
-                    <td>
-                        <button onclick="deleteUser(${index})">Excluir</button>
-                        <button onclick="editCoins(${index})">Alterar Moedas</button>
-                    </td>
+                const userDiv = document.createElement('div');
+                userDiv.innerHTML = `
+                    <strong>${user.username}</strong> (Moedas: ${user.coins}) - Senha: ${user.password}
+                    <button onclick="deleteUser(${index})">Excluir</button>
+                    <button onclick="editCoins(${index})">Alterar Moedas</button>
                 `;
-                tableBody.appendChild(row);
+                userList.appendChild(userDiv);
+            });
+
+            const videoList = document.getElementById('admin-video-list');
+            videoList.innerHTML = '';
+            videos.forEach((video, index) => {
+                const videoDiv = document.createElement('div');
+                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
+                videoList.appendChild(videoDiv);
             });
         }
 
         function deleteUser(index) {
-            if (confirm(`Tem certeza que deseja excluir o usuário ${users[index].username}?`)) {
+            if (confirm('Tem certeza que deseja excluir este usuário?')) {
                 users.splice(index, 1);
-                updateAdminTable();
-                alert('Usuário excluído com sucesso!');
+                loadAdminData();
             }
         }
 
         function editCoins(index) {
-            const newCoins = prompt(`Quantas moedas deseja atribuir ao usuário ${users[index].username}?`, users[index].coins);
-            if (newCoins !== null) {
-                const coins = parseInt(newCoins);
-                if (!isNaN(coins)) {
-                    users[index].coins = coins;
-                    updateAdminTable();
-                    alert('Moedas atualizadas com sucesso!');
-                } else {
-                    alert('Por favor, insira um número válido.');
-                }
+            const newCoins = prompt('Digite o novo saldo de moedas:');
+            if (newCoins !== null && !isNaN(newCoins)) {
+                users[index].coins = parseInt(newCoins);
+                loadAdminData();
+            } else {
+                alert('Valor inválido!');
             }
         }
-
-        // Usuário inicial para teste
-        users.push({ username: 'teste', email: 'teste@teste.com', password: '123456', coins: 10 });
-
-        showScreen('admin-login');
     </script>
 </body>
 </html>
