@@ -128,6 +128,7 @@
             <h3>Links de Outros Usuários</h3>
             <div id="otherUsersVideos"></div>
         </div>
+        <button id="logoutButton" style="display: none;">Sair</button> <!-- Botão de Logout -->
     </div>
 
     <div class="container admin-container" id="adminContainer">
@@ -143,10 +144,19 @@
     <script>
         let followedLinks = new Set();
         let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || []; // Armazenar usuários registrados
-        let videoLinks = []; // Armazenar links de vídeo por usuário
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null; // Armazenar usuário atual
         let coins = 0;
-        const adminUser = 'Danilo';
-        const adminPassword = '12022005';
+
+        // Verifica se o usuário está logado ao carregar a página
+        if (currentUser) {
+            alert('Bem-vindo de volta, ' + currentUser.username + '!');
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('videoContainer').style.display = 'block'; // Mostrar a tela de adicionar link de vídeo
+            document.getElementById('logoutButton').style.display = 'block'; // Mostrar botão de logout
+            document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
+            document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
+            displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
+        }
 
         document.getElementById('registrationForm').onsubmit = function(event) {
             event.preventDefault();
@@ -187,15 +197,17 @@
             // Verifica se os dados de login estão corretos
             const user = registeredUsers.find(user => (user.username === loginEmail || user.email === loginEmail) && user.password === loginPassword);
             if (user) {
-                alert('Login bem-sucedido!'); // Aqui você pode redirecionar para a próxima página
+                currentUser = user; // Define o usuário atual
+                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Salvar usuário no Local Storage
+                alert('Login bem-sucedido!');
+
+                // Redireciona para a tela de adicionar vídeo
                 document.getElementById('loginContainer').style.display = 'none';
                 document.getElementById('videoContainer').style.display = 'block'; // Mostrar a tela de adicionar link de vídeo
-                displayOtherUsersVideos(user); // Mostrar vídeos de outros usuários
-
-                // Habilitar o botão de adicionar vídeo se o usuário tiver moedas suficientes
-                document.getElementById('addVideoButton').disabled = user.coins < 50;
-                document.getElementById('coinCount').textContent = user.coins; // Atualiza a contagem de moedas
+                document.getElementById('logoutButton').style.display = 'block'; // Mostrar botão de logout
+                document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
                 document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
+                displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
             } else {
                 alert('Credenciais inválidas.'); // Mensagem de erro
             }
@@ -204,8 +216,7 @@
         document.getElementById('videoForm').onsubmit = function(event) {
             event.preventDefault();
             const videoLink = document.getElementById('videoLink').value;
-            const userIndex = registeredUsers.findIndex(user => (user.username === document.getElementById('loginEmail').value || user.email === document.getElementById('loginEmail').value));
-            
+            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username); // Usa currentUser
             if (userIndex !== -1) {
                 // Adicionar link de vídeo ao usuário
                 registeredUsers[userIndex].videos.push(videoLink);
@@ -230,7 +241,7 @@
         }
 
         document.getElementById('watchVideoButton').onclick = function() {
-            const userIndex = registeredUsers.findIndex(user => (user.username === document.getElementById('loginEmail').value || user.email === document.getElementById('loginEmail').value));
+            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username); // Usa currentUser
             if (registeredUsers[userIndex].videos.length > 0) {
                 const videoLink = registeredUsers[userIndex].videos[0]; // Assumindo que você quer assistir ao primeiro vídeo
                 window.open(videoLink, '_blank'); // Redireciona para o link do vídeo
@@ -254,7 +265,7 @@
             const adminPassInput = document.getElementById('adminPass').value;
 
             // Verifica as credenciais do admin
-            if (adminUserInput === adminUser && adminPassInput === adminPassword) {
+            if (adminUserInput === 'admin' && adminPassInput === 'password') {
                 alert('Login de admin bem-sucedido!');
                 document.getElementById('adminContainer').style.display = 'none';
                 displayRegisteredUsers();
@@ -300,6 +311,15 @@
             event.preventDefault();
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('registrationContainer').style.display = 'block';
+        };
+
+        // Função para sair da conta
+        document.getElementById('logoutButton').onclick = function() {
+            currentUser = null; // Limpa o usuário atual
+            localStorage.removeItem('currentUser'); // Remove do Local Storage
+            document.getElementById('videoContainer').style.display = 'none'; // Oculta a tela de vídeos
+            document.getElementById('loginContainer').style.display = 'block'; // Redireciona para a tela de login
+            document.getElementById('logoutButton').style.display = 'none'; // Oculta o botão de logout
         };
     </script>
 </body>
