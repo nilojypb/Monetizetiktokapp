@@ -148,21 +148,6 @@
             }
         }
 
-        // Função para verificar o login ao carregar a página
-        function checkLogin() {
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
-                if (currentUser.role === 'admin') {
-                    showScreen('admin');
-                } else {
-                    showScreen('main');
-                }
-            } else {
-                showScreen('login');
-            }
-        }
-
         // Registro de usuário
         function registerUser() {
             const username = document.getElementById('reg-username').value;
@@ -192,11 +177,9 @@
 
             if (username === "Danilo" && password === "12022005") {
                 currentUser = { username: "Danilo", role: "admin" };
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 showScreen('admin');
             } else if (user) {
                 currentUser = user;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 showScreen('main');
             } else {
                 document.getElementById('login-error').style.display = 'block';
@@ -206,7 +189,6 @@
         // Logout
         function logout() {
             currentUser = null;
-            localStorage.removeItem('currentUser');
             showScreen('login');
         }
 
@@ -230,5 +212,22 @@
             });
         }
 
-        // Atualiza a lista de links
+        // Atualiza a lista de links na tela administrativa
+        function updateAdminLinkList() {
+            const adminLinkListDiv = document.getElementById('admin-link-list');
+            adminLinkListDiv.innerHTML = '';
+            links.forEach((link, index) => {
+                const linkDiv = document.createElement('div');
+                linkDiv.className = 'link';
+                linkDiv.innerHTML = `${link} <button onclick="deleteLink(${index})">Excluir</button>`;
+                adminLinkListDiv.appendChild(linkDiv);
+            });
+        }
+
+        // Atualiza a lista de links disponíveis na tela principal
+        function updateUserLinkList() {
+            const userLinkListDiv = document.getElementById('user-link-list');
+            userLinkListDiv.innerHTML = '';
+            links.forEach(link => {
+                const linkDiv = document.createElement('div');
         
