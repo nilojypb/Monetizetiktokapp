@@ -61,15 +61,6 @@
             text-decoration: underline;
             padding: 0;
         }
-
-        .user-list div, .video-list div {
-            margin-bottom: 10px;
-        }
-
-        .admin-actions button {
-            margin: 5px 0;
-            width: auto;
-        }
     </style>
 </head>
 <body>
@@ -83,16 +74,6 @@
         <p>Já tem uma conta? <button class="link-button" onclick="showScreen('login')">Faça login aqui</button>.</p>
     </div>
 
-    <!-- Tela de Seguir Contas -->
-    <div class="container" id="follow">
-        <h1>Siga Estas Contas</h1>
-        <div class="link-list">
-            <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
-            <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
-        </div>
-        <button id="continue-button" disabled onclick="showScreen('login')">Continuar</button>
-    </div>
-
     <!-- Tela de Login -->
     <div class="container" id="login">
         <h1>Login</h1>
@@ -103,34 +84,16 @@
         <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
     </div>
 
-    <!-- Tela de Adicionar e Assistir Vídeos -->
+    <!-- Tela Principal -->
     <div class="container" id="main">
         <h1>Bem-vindo!</h1>
-        <h2>Adicionar Vídeo</h2>
-        <input type="url" id="video-url" placeholder="Link do vídeo">
-        <button onclick="addVideo()">Adicionar Vídeo</button>
-        <h2>Assistir Vídeos</h2>
-        <div id="video-list"></div>
-        <button onclick="logout()">Sair</button>
-    </div>
-
-    <!-- Tela de Administração -->
-    <div class="container" id="admin">
-        <h1>Painel Administrativo</h1>
-        <div class="user-list" id="user-list">
-            <h2>Usuários Registrados</h2>
-            <!-- Lista de usuários será gerada aqui -->
-        </div>
-        <div class="video-list" id="admin-video-list">
-            <h2>Links de Vídeos</h2>
-            <!-- Lista de vídeos será gerada aqui -->
-        </div>
+        <p>Você está logado.</p>
         <button onclick="logout()">Sair</button>
     </div>
 
     <script>
-        let users = [];
-        let videos = [];
+        // Carregar usuários do Local Storage ou inicializar como vazio
+        let users = JSON.parse(localStorage.getItem('users')) || [];
         let currentUser = null;
 
         function showScreen(screenId) {
@@ -139,33 +102,44 @@
         }
 
         function registerUser() {
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
 
             if (username && email && password) {
-                users.push({ username, email, password, coins: 0 });
+                // Verificar se o usuário ou e-mail já existe
+                const existingUser = users.find(user => user.username === username || user.email === email);
+                if (existingUser) {
+                    alert('Nome de usuário ou e-mail já cadastrado!');
+                    return;
+                }
+
+                // Salvar novo usuário
+                const newUser = { username, email, password };
+                users.push(newUser);
+
+                // Atualizar Local Storage
+                localStorage.setItem('users', JSON.stringify(users));
+
                 alert('Usuário registrado com sucesso!');
-                showScreen('follow');
+                showScreen('login');
             } else {
                 alert('Preencha todos os campos!');
             }
         }
 
         function loginUser() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+            const usernameOrEmail = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
 
-            if (username === "Danilo" && password === "12022005") {
-                showScreen('admin');
-                loadAdminData();
-                return;
-            }
-
-            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+            // Procurar o usuário no Local Storage
+            const user = users.find(user =>
+                (user.username === usernameOrEmail || user.email === usernameOrEmail) && user.password === password
+            );
 
             if (user) {
                 currentUser = user;
+                alert(`Bem-vindo, ${user.username}!`);
                 showScreen('main');
             } else {
                 document.getElementById('login-error').style.display = 'block';
@@ -177,74 +151,7 @@
             showScreen('login');
         }
 
-        function addVideo() {
-            const videoUrl = document.getElementById('video-url').value;
-
-            if (videoUrl) {
-                videos.push(videoUrl);
-                alert('Vídeo adicionado com sucesso!');
-                document.getElementById('video-url').value = '';
-                updateVideoList();
-            } else {
-                alert('Insira um link válido!');
-            }
-        }
-
-        function updateVideoList() {
-            const videoList = document.getElementById('video-list');
-            videoList.innerHTML = '';
-            videos.forEach(video => {
-                const videoDiv = document.createElement('div');
-                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
-                videoList.appendChild(videoDiv);
-            });
-        }
-
-        function loadAdminData() {
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = '';
-            users.forEach((user, index) => {
-                const userDiv = document.createElement('div');
-                userDiv.innerHTML = `
-                    <strong>${user.username}</strong> (Moedas: ${user.coins}) - Senha: ${user.password}
-                    <button onclick="deleteUser(${index})">Excluir</button>
-                    <button onclick="editCoins(${index})">Alterar Moedas</button>
-                `;
-                userList.appendChild(userDiv);
-            });
-
-            const videoList = document.getElementById('admin-video-list');
-            videoList.innerHTML = '';
-            videos.forEach(video => {
-                const videoDiv = document.createElement('div');
-                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
-                videoList.appendChild(videoDiv);
-            });
-        }
-
-        function deleteUser(index) {
-            if (confirm('Tem certeza que deseja excluir este usuário?')) {
-                users.splice(index, 1);
-                loadAdminData();
-            }
-        }
-
-        function editCoins(index) {
-            const newCoins = prompt('Digite o novo saldo de moedas:');
-            if (newCoins !== null && !isNaN(newCoins)) {
-                users[index].coins = parseInt(newCoins);
-                loadAdminData();
-            } else {
-                alert('Valor inválido!');
-            }
-        }
-
-        document.querySelectorAll('.link-list a').forEach(link => {
-            link.addEventListener('click', () => {
-                document.getElementById('continue-button').disabled = false;
-            });
-        });
-
+        // Mostrar tela inicial ao carregar a página
         showScreen('register');
     </script>
 </body>
