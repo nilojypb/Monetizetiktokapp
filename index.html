@@ -5,84 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Completo</title>
     <style>
-        /* Estilos gerais */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #ff7eb3, #ff758c);
-            color: #fff;
+            height: 100vh;
         }
+
         .container {
             width: 100%;
             max-width: 400px;
             padding: 20px;
             background: #fff;
-            color: #333;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
             display: none;
-            text-align: center;
         }
+
         .container.active {
             display: block;
         }
-        h1, h2, h3, p {
-            margin: 10px 0;
+
+        h1, h2, p {
+            text-align: center;
         }
+
         input, button {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            outline: none;
-        }
-        input {
             border: 1px solid #ccc;
+            border-radius: 5px;
         }
+
         button {
-            background-color: #ff758c;
-            color: #fff;
-            font-weight: bold;
+            background-color: #007bff;
+            color: white;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #ff5773;
+
+        button[disabled] {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
+
         .link-button {
             background: none;
             border: none;
-            color: #ff758c;
-            font-size: 0.9em;
+            color: #007bff;
             cursor: pointer;
             text-decoration: underline;
+            padding: 0;
         }
-        .link-button:hover {
-            color: #ff5773;
-        }
+
         .link-list {
-            margin-top: 20px;
-        }
-        .link {
             margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #f9f9f9;
-            color: #333;
-            text-align: left;
+            display: flex;
+            flex-direction: column;
         }
-        .link a {
+
+        .link-list a {
             text-decoration: none;
             color: #007bff;
-        }
-        .link a:hover {
-            text-decoration: underline;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -99,16 +88,12 @@
 
     <!-- Tela de Seguir Contas -->
     <div class="container" id="follow">
-        <h1>Siga essas contas</h1>
+        <h1>Siga Estas Contas</h1>
         <div class="link-list">
-            <div class="link">
-                <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
-            </div>
-            <div class="link">
-                <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRppnFcP37&_r=1" target="_blank">Seguir Conta 2</a>
-            </div>
+            <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
+            <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
         </div>
-        <button id="continue-btn" onclick="showScreen('login')" disabled>Continuar</button>
+        <button id="continue-button" disabled onclick="showScreen('login')">Continuar</button>
     </div>
 
     <!-- Tela de Login -->
@@ -118,96 +103,94 @@
         <input type="password" id="login-password" placeholder="Senha" required>
         <button onclick="loginUser()">Entrar</button>
         <p>Não tem uma conta? <button class="link-button" onclick="showScreen('register')">Registre-se aqui</button>.</p>
+        <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
     </div>
 
-    <!-- Tela de Adicionar/Assistir Vídeos -->
+    <!-- Tela de Adicionar e Assistir Vídeos -->
     <div class="container" id="main">
-        <h1>Vídeos</h1>
-        <h3>Adicionar Vídeo</h3>
-        <input type="text" id="video-link" placeholder="URL do vídeo">
-        <button onclick="addVideo()">Adicionar</button>
-        <h3>Vídeos Disponíveis</h3>
+        <h1>Bem-vindo!</h1>
+        <h2>Adicionar Vídeo</h2>
+        <input type="url" id="video-url" placeholder="Link do vídeo">
+        <button onclick="addVideo()">Adicionar Vídeo</button>
+        <h2>Assistir Vídeos</h2>
         <div id="video-list"></div>
         <button onclick="logout()">Sair</button>
     </div>
 
-    <!-- Tela Administrativa -->
-    <div class="container" id="admin">
-        <h1>Administração</h1>
-        <h3>Usuários Registrados</h3>
-        <div id="user-list"></div>
-        <h3>Gerenciar Links</h3>
-        <input type="text" id="admin-video-link" placeholder="Adicionar link">
-        <button onclick="addAdminVideo()">Adicionar</button>
-        <button onclick="logout()">Sair</button>
-    </div>
-
     <script>
-        // Simulação de banco de dados
         let users = [];
-        let linksFollowed = 0;
+        let videos = [];
         let currentUser = null;
 
-        // Exibe a tela
         function showScreen(screenId) {
-            document.querySelectorAll('.container').forEach(screen => {
-                screen.classList.remove('active');
-            });
+            document.querySelectorAll('.container').forEach(screen => screen.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        // Registro de usuário
         function registerUser() {
             const username = document.getElementById('reg-username').value;
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
+
             if (username && email && password) {
                 users.push({ username, email, password, coins: 0 });
+                alert('Usuário registrado com sucesso!');
                 showScreen('follow');
             } else {
-                alert('Preencha todos os campos.');
+                alert('Preencha todos os campos!');
             }
         }
 
-        // Login de usuário
         function loginUser() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
-            const user = users.find(u => u.username === username && u.password === password);
+
+            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+
             if (user) {
                 currentUser = user;
                 showScreen('main');
             } else {
-                alert('Usuário ou senha inválidos.');
+                document.getElementById('login-error').style.display = 'block';
             }
         }
 
-        // Logout
         function logout() {
             currentUser = null;
             showScreen('login');
         }
 
-        // Seguir contas
-        document.querySelectorAll('.link a').forEach(link => {
+        function addVideo() {
+            const videoUrl = document.getElementById('video-url').value;
+
+            if (videoUrl) {
+                videos.push(videoUrl);
+                alert('Vídeo adicionado com sucesso!');
+                document.getElementById('video-url').value = '';
+                updateVideoList();
+            } else {
+                alert('Insira um link válido!');
+            }
+        }
+
+        function updateVideoList() {
+            const videoList = document.getElementById('video-list');
+            videoList.innerHTML = '';
+            videos.forEach(video => {
+                const videoDiv = document.createElement('div');
+                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
+                videoList.appendChild(videoDiv);
+            });
+        }
+
+        // Habilitar o botão "Continuar" após seguir as contas
+        document.querySelectorAll('.link-list a').forEach(link => {
             link.addEventListener('click', () => {
-                linksFollowed++;
-                if (linksFollowed === 2) {
-                    document.getElementById('continue-btn').disabled = false;
-                }
+                document.getElementById('continue-button').disabled = false;
             });
         });
 
-        // Adicionar vídeo
-        function addVideo() {
-            const videoLink = document.getElementById('video-link').value;
-            if (videoLink) {
-                alert('Vídeo adicionado com sucesso!');
-                document.getElementById('video-link').value = '';
-            } else {
-                alert('Digite um link válido.');
-            }
-        }
+        showScreen('register');
     </script>
 </body>
 </html>
