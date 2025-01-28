@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Completo</title>
     <style>
+        /* Estilos gerais */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -12,59 +13,76 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ff7eb3, #ff758c);
+            color: #fff;
         }
         .container {
             width: 100%;
             max-width: 400px;
             padding: 20px;
             background: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
             display: none;
+            text-align: center;
         }
         .container.active {
             display: block;
         }
-        h1, h2, p {
-            text-align: center;
+        h1, h2, h3, p {
+            margin: 10px 0;
         }
         input, button {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border: 1px solid #ccc;
+            border: none;
             border-radius: 5px;
+            outline: none;
+        }
+        input {
+            border: 1px solid #ccc;
         }
         button {
-            background-color: #007bff;
+            background-color: #ff758c;
             color: #fff;
+            font-weight: bold;
             cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff5773;
         }
         .link-button {
             background: none;
             border: none;
-            color: #007bff;
+            color: #ff758c;
+            font-size: 0.9em;
             cursor: pointer;
             text-decoration: underline;
-            padding: 0;
         }
-        #login-error {
-            color: red;
-            display: none;
+        .link-button:hover {
+            color: #ff5773;
         }
-        #user-list, #link-list, #admin-link-list {
+        .link-list {
             margin-top: 20px;
-            max-height: 150px;
-            overflow-y: auto;
         }
-        .user, .link {
+        .link {
+            margin: 10px 0;
+            padding: 10px;
             border: 1px solid #ccc;
-            padding: 5px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
+            border-radius: 5px;
+            background: #f9f9f9;
+            color: #333;
+            text-align: left;
+        }
+        .link a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -79,6 +97,20 @@
         <p>Já tem uma conta? <button class="link-button" onclick="showScreen('login')">Faça login aqui</button>.</p>
     </div>
 
+    <!-- Tela de Seguir Contas -->
+    <div class="container" id="follow">
+        <h1>Siga essas contas</h1>
+        <div class="link-list">
+            <div class="link">
+                <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
+            </div>
+            <div class="link">
+                <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRppnFcP37&_r=1" target="_blank">Seguir Conta 2</a>
+            </div>
+        </div>
+        <button id="continue-btn" onclick="showScreen('login')" disabled>Continuar</button>
+    </div>
+
     <!-- Tela de Login -->
     <div class="container" id="login">
         <h1>Login</h1>
@@ -86,66 +118,42 @@
         <input type="password" id="login-password" placeholder="Senha" required>
         <button onclick="loginUser()">Entrar</button>
         <p>Não tem uma conta? <button class="link-button" onclick="showScreen('register')">Registre-se aqui</button>.</p>
-        <p id="login-error">Credenciais inválidas.</p>
     </div>
 
-    <!-- Tela para Seguir Contas -->
-    <div class="container" id="follow-accounts">
-        <h1>Seguir Contas</h1>
-        <p>Por favor, siga os dois links abaixo:</p>
-        <button onclick="followAccount('https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1')">Seguir @thamyresp06</button>
-        <button onclick="followAccount('https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRjnv62okf&_r=1')">Seguir @mentecuriosabia</button>
-        <button onclick="showScreen('login')">Continuar</button>
-    </div>
-
-    <!-- Tela Principal -->
+    <!-- Tela de Adicionar/Assistir Vídeos -->
     <div class="container" id="main">
-        <h1>Painel Principal</h1>
-        <h3>Links Disponíveis</h3>
-        <div id="user-link-list"></div>
+        <h1>Vídeos</h1>
+        <h3>Adicionar Vídeo</h3>
+        <input type="text" id="video-link" placeholder="URL do vídeo">
+        <button onclick="addVideo()">Adicionar</button>
+        <h3>Vídeos Disponíveis</h3>
+        <div id="video-list"></div>
         <button onclick="logout()">Sair</button>
     </div>
 
     <!-- Tela Administrativa -->
     <div class="container" id="admin">
         <h1>Administração</h1>
-        <h2>Bem-vindo, Administrador!</h2>
         <h3>Usuários Registrados</h3>
         <div id="user-list"></div>
-        <h3>Links Adicionados</h3>
-        <div id="admin-link-list"></div>
-        <input type="text" id="link-input" placeholder="Adicionar link">
-        <button onclick="addLinkForAdmin()">Adicionar Link</button>
-        <h3>Alterar Moedas</h3>
-        <input type="text" id="alter-username" placeholder="Usuário">
-        <input type="number" id="alter-coins" placeholder="Quantidade de Moedas">
-        <button onclick="alterUserCoins()">Alterar Moedas</button>
+        <h3>Gerenciar Links</h3>
+        <input type="text" id="admin-video-link" placeholder="Adicionar link">
+        <button onclick="addAdminVideo()">Adicionar</button>
         <button onclick="logout()">Sair</button>
     </div>
 
     <script>
         // Simulação de banco de dados
         let users = [];
-        let links = [];
+        let linksFollowed = 0;
         let currentUser = null;
 
-        // Navegação entre telas
-        function showScreen(id) {
+        // Exibe a tela
+        function showScreen(screenId) {
             document.querySelectorAll('.container').forEach(screen => {
                 screen.classList.remove('active');
             });
-            document.getElementById(id).classList.add('active');
-
-            // Atualizar listas na tela de administração e principal
-            if (id === 'admin') {
-                updateUserList();
-                updateAdminLinkList();
-            } else if (id === 'main') {
-                updateUserLinkList();
-            } else if (id === 'follow-accounts') {
-                // Ao voltar para a tela de seguir contas, verifica se o usuário já seguiu
-                checkFollowingStatus();
-            }
+            document.getElementById(screenId).classList.add('active');
         }
 
         // Registro de usuário
@@ -153,36 +161,24 @@
             const username = document.getElementById('reg-username').value;
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-password').value;
-
             if (username && email && password) {
-                const existingUser = users.find(user => user.username === username || user.email === email);
-                if (existingUser) {
-                    alert('Usuário ou e-mail já cadastrados!');
-                    return;
-                }
-                users.push({ username, email, password, coins: 0, followedAccounts: [] });
-                alert('Usuário registrado com sucesso!');
-                showScreen('follow-accounts'); // Redireciona para a tela de seguir contas
+                users.push({ username, email, password, coins: 0 });
+                showScreen('follow');
             } else {
-                alert('Preencha todos os campos!');
+                alert('Preencha todos os campos.');
             }
         }
 
-        // Login
+        // Login de usuário
         function loginUser() {
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
-
-            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
-
-            if (username === "Danilo" && password === "12022005") {
-                currentUser = { username: "Danilo", role: "admin" };
-                showScreen('admin');
-            } else if (user) {
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
                 currentUser = user;
                 showScreen('main');
             } else {
-                document.getElementById('login-error').style.display = 'block';
+                alert('Usuário ou senha inválidos.');
             }
         }
 
@@ -193,41 +189,25 @@
         }
 
         // Seguir contas
-        function followAccount(link) {
-            if (currentUser) {
-                currentUser.followedAccounts.push(link);
-                alert('Conta seguida com sucesso!');
+        document.querySelectorAll('.link a').forEach(link => {
+            link.addEventListener('click', () => {
+                linksFollowed++;
+                if (linksFollowed === 2) {
+                    document.getElementById('continue-btn').disabled = false;
+                }
+            });
+        });
+
+        // Adicionar vídeo
+        function addVideo() {
+            const videoLink = document.getElementById('video-link').value;
+            if (videoLink) {
+                alert('Vídeo adicionado com sucesso!');
+                document.getElementById('video-link').value = '';
+            } else {
+                alert('Digite um link válido.');
             }
         }
-
-        // Atualiza a lista de usuários na tela administrativa
-        function updateUserList() {
-            const userListDiv = document.getElementById('user-list');
-            userListDiv.innerHTML = '';
-            users.forEach((user, index) => {
-                const userDiv = document.createElement('div');
-                userDiv.className = 'user';
-                userDiv.innerHTML = `${user.username} (Moedas: ${user.coins}) <button onclick="deleteUser(${index})">Excluir</button>`;
-                userListDiv.appendChild(userDiv);
-            });
-        }
-
-        // Atualiza a lista de links na tela administrativa
-        function updateAdminLinkList() {
-            const adminLinkListDiv = document.getElementById('admin-link-list');
-            adminLinkListDiv.innerHTML = '';
-            links.forEach((link, index) => {
-                const linkDiv = document.createElement('div');
-                linkDiv.className = 'link';
-                linkDiv.innerHTML = `${link} <button onclick="deleteLink(${index})">Excluir</button>`;
-                adminLinkListDiv.appendChild(linkDiv);
-            });
-        }
-
-        // Atualiza a lista de links disponíveis na tela principal
-        function updateUserLinkList() {
-            const userLinkListDiv = document.getElementById('user-link-list');
-            userLinkListDiv.innerHTML = '';
-            links.forEach(link => {
-                const linkDiv = document.createElement('div');
-        
+    </script>
+</body>
+</html>
