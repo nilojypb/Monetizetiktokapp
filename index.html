@@ -89,6 +89,15 @@
         <p id="login-error">Credenciais inválidas.</p>
     </div>
 
+    <!-- Tela para Seguir Contas -->
+    <div class="container" id="follow-accounts">
+        <h1>Seguir Contas</h1>
+        <p>Por favor, siga os dois links abaixo:</p>
+        <button onclick="followAccount('https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1')">Seguir @thamyresp06</button>
+        <button onclick="followAccount('https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRjnv62okf&_r=1')">Seguir @mentecuriosabia</button>
+        <button onclick="showScreen('login')">Continuar</button>
+    </div>
+
     <!-- Tela Principal -->
     <div class="container" id="main">
         <h1>Painel Principal</h1>
@@ -133,6 +142,24 @@
                 updateAdminLinkList();
             } else if (id === 'main') {
                 updateUserLinkList();
+            } else if (id === 'follow-accounts') {
+                // Ao voltar para a tela de seguir contas, verifica se o usuário já seguiu
+                checkFollowingStatus();
+            }
+        }
+
+        // Função para verificar o login ao carregar a página
+        function checkLogin() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                if (currentUser.role === 'admin') {
+                    showScreen('admin');
+                } else {
+                    showScreen('main');
+                }
+            } else {
+                showScreen('login');
             }
         }
 
@@ -148,9 +175,9 @@
                     alert('Usuário ou e-mail já cadastrados!');
                     return;
                 }
-                users.push({ username, email, password, coins: 0 });
+                users.push({ username, email, password, coins: 0, followedAccounts: [] });
                 alert('Usuário registrado com sucesso!');
-                showScreen('login');
+                showScreen('follow-accounts'); // Redireciona para a tela de seguir contas
             } else {
                 alert('Preencha todos os campos!');
             }
@@ -165,9 +192,11 @@
 
             if (username === "Danilo" && password === "12022005") {
                 currentUser = { username: "Danilo", role: "admin" };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 showScreen('admin');
             } else if (user) {
                 currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 showScreen('main');
             } else {
                 document.getElementById('login-error').style.display = 'block';
@@ -177,7 +206,16 @@
         // Logout
         function logout() {
             currentUser = null;
+            localStorage.removeItem('currentUser');
             showScreen('login');
+        }
+
+        // Seguir contas
+        function followAccount(link) {
+            if (currentUser) {
+                currentUser.followedAccounts.push(link);
+                alert('Conta seguida com sucesso!');
+            }
         }
 
         // Atualiza a lista de usuários na tela administrativa
@@ -192,74 +230,5 @@
             });
         }
 
-        // Atualiza a lista de links na tela administrativa
-        function updateAdminLinkList() {
-            const adminLinkListDiv = document.getElementById('admin-link-list');
-            adminLinkListDiv.innerHTML = '';
-            links.forEach((link, index) => {
-                const linkDiv = document.createElement('div');
-                linkDiv.className = 'link';
-                linkDiv.innerHTML = `${link} <button onclick="deleteLink(${index})">Excluir</button>`;
-                adminLinkListDiv.appendChild(linkDiv);
-            });
-        }
-
-        // Atualiza a lista de links disponíveis na tela principal
-        function updateUserLinkList() {
-            const userLinkListDiv = document.getElementById('user-link-list');
-            userLinkListDiv.innerHTML = '';
-            links.forEach(link => {
-                const linkDiv = document.createElement('div');
-                linkDiv.className = 'link';
-                linkDiv.innerHTML = link;
-                userLinkListDiv.appendChild(linkDiv);
-            });
-        }
-
-        // Adiciona link para o administrador
-        function addLinkForAdmin() {
-            const linkInput = document.getElementById('link-input').value;
-            if (linkInput) {
-                links.push(linkInput);
-                document.getElementById('link-input').value = '';
-                updateAdminLinkList();
-                updateUserLinkList(); // Atualiza também a lista de links para usuários
-            } else {
-                alert('Digite um link válido.');
-            }
-        }
-
-        // Excluir usuário
-        function deleteUser(index) {
-            users.splice(index, 1);
-            updateUserList();
-        }
-
-        // Excluir link
-        function deleteLink(index) {
-            links.splice(index, 1);
-            updateAdminLinkList();
-            updateUserLinkList(); // Atualiza a lista de links para usuários
-        }
-
-        // Alterar moedas
-        function alterUserCoins() {
-            const username = document.getElementById('alter-username').value;
-            const coins = parseInt(document.getElementById('alter-coins').value, 10);
-            const user = users.find(u => u.username === username);
-            if (user && !isNaN(coins)) {
-                user.coins = coins;
-                alert('Moedas alteradas com sucesso!');
-                document.getElementById('alter-username').value = '';
-                document.getElementById('alter-coins').value = '';
-                updateUserList();
-            } else {
-                alert('Usuário não encontrado ou valor de moedas inválido.');
-            }
-        }
-
-        // Inicialização
-        showScreen('register');
-    </script>
-</body>
-</html>
+        // Atualiza a lista de links
+        
