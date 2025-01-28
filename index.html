@@ -119,7 +119,7 @@
         <h2>Adicionar Link de Vídeo</h2>
         <form id="videoForm">
             <input type="text" id="videoLink" placeholder="Cole o link do vídeo" required>
-            <button type="submit" id="addVideoButton" disabled>Adicionar Link</button>
+            <button type="submit" id="addVideoButton">Adicionar Link</button>
         </form>
         <div id="videoList"></div>
         <button id="watchVideoButton" style="display: block;">Assistir Vídeo</button>
@@ -156,6 +156,7 @@
             document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
             document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
             displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
+            updateWatchButton(); // Atualiza o botão de assistir vídeo
         }
 
         document.getElementById('registrationForm').onsubmit = function(event) {
@@ -193,8 +194,6 @@
             event.preventDefault();
             const loginEmail = document.getElementById('loginEmail').value;
             const loginPassword = document.getElementById('loginPassword').value;
-
-            // Verifica se os dados de login estão corretos
             const user = registeredUsers.find(user => (user.username === loginEmail || user.email === loginEmail) && user.password === loginPassword);
             if (user) {
                 currentUser = user; // Define o usuário atual
@@ -208,6 +207,7 @@
                 document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
                 document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
                 displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
+                updateWatchButton(); // Atualiza o botão de assistir vídeo
             } else {
                 alert('Credenciais inválidas.'); // Mensagem de erro
             }
@@ -224,6 +224,7 @@
                 alert('Link de vídeo adicionado!');
                 document.getElementById('videoLink').value = ''; // Limpa o campo de entrada
                 displayVideos(userIndex);
+                updateWatchButton(); // Atualiza o botão de assistir vídeo
             }
         };
 
@@ -236,7 +237,17 @@
                     videoItem.textContent = video;
                     videoList.appendChild(videoItem);
                 });
-                document.getElementById('watchVideoButton').style.display = 'block'; // Mostra o botão de assistir vídeo
+            }
+        }
+
+        function updateWatchButton() {
+            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username);
+            const watchVideoButton = document.getElementById('watchVideoButton');
+            if (registeredUsers[userIndex].videos.length > 0) {
+                watchVideoButton.style.display = 'block'; // Mostra o botão de assistir vídeo
+            } else {
+                watchVideoButton.style.display = 'none'; // Oculta o botão se não houver vídeos
+                alert('Não há links de vídeo disponíveis.'); // Mensagem de alerta
             }
         }
 
@@ -249,6 +260,7 @@
                 localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
                 document.getElementById('coinCount').textContent = registeredUsers[userIndex].coins; // Atualiza a contagem de moedas
                 displayVideos(userIndex); // Atualiza a lista de vídeos
+                updateWatchButton(); // Atualiza o botão de assistir vídeo
             } else {
                 alert('Não há links de vídeo disponíveis.'); // Mensagem de alerta
             }
