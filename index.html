@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Usuário</title>
+    <title>Aplicativo de Vídeo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,24 +55,12 @@
         .link a:hover {
             text-decoration: underline;
         }
-        .follow-container, .login-container, .video-container, .admin-container {
-            display: none; /* Inicialmente oculto */
+        .video-container {
+            display: none; /* Oculta a tela de vídeo inicialmente */
             text-align: center;
-            margin-top: 20px;
         }
-        #otherVideos {
-            margin-top: 20px;
-        }
-        .admin-button {
+        #coinDisplay {
             margin-top: 10px;
-            background-color: #dc3545;
-        }
-        .admin-button:hover {
-            background-color: #c82333;
-        }
-        .user-list {
-            margin-top: 20px;
-            text-align: left;
         }
     </style>
 </head>
@@ -90,17 +78,7 @@
         </div>
     </div>
 
-    <div class="container follow-container" id="followContainer">
-        <h2>Siga as Contas</h2>
-        <p>Siga as duas contas abaixo:</p>
-        <p><a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank" id="link1">Conta 1</a></p>
-        <button class="follow-button" onclick="followAccount('https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1')">Seguir Conta 1</button>
-        <p><a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tQGoeXFFqQ&_r=1" target="_blank" id="link2">Conta 2</a></p>
-        <button class="follow-button" onclick="followAccount('https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tQGoeXFFqQ&_r=1')">Seguir Conta 2</button>
-        <button id="continueButton" disabled>Continuar</button>
-    </div>
-
-    <div class="container login-container" id="loginContainer">
+    <div class="container" id="loginContainer" style="display: none;">
         <h2>Login</h2>
         <form id="loginForm">
             <input type="text" id="loginEmail" placeholder="Usuário ou E-mail" required>
@@ -110,53 +88,28 @@
         <div class="link">
             <p>Não tem uma conta? <a href="#" id="registerLink">Registre-se</a></p>
         </div>
-        <div class="link">
-            <p><a href="#" id="adminLink">Área Administrativa</a></p>
-        </div>
     </div>
 
     <div class="container video-container" id="videoContainer">
         <h2>Adicionar Link de Vídeo</h2>
         <form id="videoForm">
             <input type="text" id="videoLink" placeholder="Cole o link do vídeo" required>
-            <button type="submit" id="addVideoButton">Adicionar Link</button>
+            <button type="submit">Adicionar Link</button>
         </form>
         <div id="videoList"></div>
-        <button id="watchVideoButton" style="display: block;">Assistir Vídeo</button>
+        <button id="watchVideoButton" style="display: none;">Assistir Vídeo</button>
         <p id="coinDisplay" style="display:none;">Moedas: <span id="coinCount">0</span></p>
-        <div id="otherVideos">
-            <h3>Links de Outros Usuários</h3>
-            <div id="otherUsersVideos"></div>
-        </div>
         <button id="logoutButton" style="display: none;">Sair</button> <!-- Botão de Logout -->
     </div>
 
-    <div class="container admin-container" id="adminContainer">
-        <h2>Login de Admin</h2>
-        <form id="adminForm">
-            <input type="text" id="adminUser" placeholder="Usuário" required>
-            <input type="password" id="adminPass" placeholder="Senha" required>
-            <button type="submit">Login</button>
-        </form>
-        <div class="user-list" id="userList"></div>
-    </div>
-
     <script>
-        let followedLinks = new Set();
-        let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || []; // Armazenar usuários registrados
-        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null; // Armazenar usuário atual
-        let coins = 0;
+        let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
         // Verifica se o usuário está logado ao carregar a página
         if (currentUser) {
             alert('Bem-vindo de volta, ' + currentUser.username + '!');
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('videoContainer').style.display = 'block'; // Mostrar a tela de adicionar link de vídeo
-            document.getElementById('logoutButton').style.display = 'block'; // Mostrar botão de logout
-            document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
-            document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
-            displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
-            updateWatchButton(); // Atualiza o botão de assistir vídeo
+            showVideoContainer();
         }
 
         document.getElementById('registrationForm').onsubmit = function(event) {
@@ -165,173 +118,99 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
+            // Verificar se o usuário já existe
+            const existingUser = registeredUsers.find(user => user.username === username || user.email === email);
+            if (existingUser) {
+                alert('Usuário ou E-mail já cadastrado!');
+                return;
+            }
+
             // Adicionar usuário registrado
             registeredUsers.push({ username, email, password, videos: [], coins: 0 });
-            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
             alert('Usuário registrado: ' + username);
-
-            // Mostrar a tela de seguir contas
             document.getElementById('registrationContainer').style.display = 'none';
-            document.getElementById('followContainer').style.display = 'block';
-        };
-
-        function followAccount(link) {
-            followedLinks.add(link);
-            window.open(link, '_blank'); // Redireciona para o perfil
-
-            // Verifica se ambos os links foram seguidos
-            if (followedLinks.size === 2) {
-                document.getElementById('continueButton').disabled = false; // Habilita o botão
-            }
-        }
-
-        document.getElementById('continueButton').onclick = function() {
-            document.getElementById('followContainer').style.display = 'none';
-            document.getElementById('loginContainer').style.display = 'block'; // Mostra a tela de login
+            document.getElementById('loginContainer').style.display = 'block';
         };
 
         document.getElementById('loginForm').onsubmit = function(event) {
             event.preventDefault();
             const loginEmail = document.getElementById('loginEmail').value;
             const loginPassword = document.getElementById('loginPassword').value;
+
+            // Verificar credenciais
             const user = registeredUsers.find(user => (user.username === loginEmail || user.email === loginEmail) && user.password === loginPassword);
             if (user) {
-                currentUser = user; // Define o usuário atual
-                localStorage.setItem('currentUser', JSON.stringify(currentUser)); // Salvar usuário no Local Storage
+                currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 alert('Login bem-sucedido!');
-
-                // Redireciona para a tela de adicionar vídeo
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('videoContainer').style.display = 'block'; // Mostrar a tela de adicionar link de vídeo
-                document.getElementById('logoutButton').style.display = 'block'; // Mostrar botão de logout
-                document.getElementById('coinCount').textContent = currentUser.coins; // Atualiza a contagem de moedas
-                document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
-                displayOtherUsersVideos(currentUser); // Mostrar vídeos de outros usuários
-                updateWatchButton(); // Atualiza o botão de assistir vídeo
+                showVideoContainer();
             } else {
-                alert('Credenciais inválidas.'); // Mensagem de erro
+                alert('Usuário ou senha inválidos!');
             }
         };
 
         document.getElementById('videoForm').onsubmit = function(event) {
             event.preventDefault();
             const videoLink = document.getElementById('videoLink').value;
-            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username); // Usa currentUser
-            if (userIndex !== -1) {
-                // Adicionar link de vídeo ao usuário
-                registeredUsers[userIndex].videos.push(videoLink);
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
-                alert('Link de vídeo adicionado!');
-                document.getElementById('videoLink').value = ''; // Limpa o campo de entrada
-                displayVideos(userIndex);
-                updateWatchButton(); // Atualiza o botão de assistir vídeo
+            if (currentUser) {
+                currentUser.videos.push(videoLink);
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                displayVideos();
+                document.getElementById('videoLink').value = ''; // Limpa o campo
             }
         };
 
-        function displayVideos(userIndex) {
+        function displayVideos() {
             const videoList = document.getElementById('videoList');
             videoList.innerHTML = '';
-            if (registeredUsers[userIndex].videos.length > 0) {
-                registeredUsers[userIndex].videos.forEach(video => {
-                    const videoItem = document.createElement('div');
-                    videoItem.textContent = video;
-                    videoList.appendChild(videoItem);
-                });
-            }
+            currentUser.videos.forEach((video, index) => {
+                videoList.innerHTML += `<p>Vídeo ${index + 1}: ${video}</p>`;
+            });
+            updateWatchButton();
         }
 
         function updateWatchButton() {
-            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username);
             const watchVideoButton = document.getElementById('watchVideoButton');
-            if (registeredUsers[userIndex].videos.length > 0) {
-                watchVideoButton.style.display = 'block'; // Mostra o botão de assistir vídeo
+            if (currentUser.videos.length > 0) {
+                watchVideoButton.style.display = 'block';
+                watchVideoButton.onclick = function() {
+                    alert('Assistindo ao vídeo: ' + currentUser.videos[0]); // Simula assistir vídeo
+                    currentUser.coins += 10;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    document.getElementById('coinCount').textContent = currentUser.coins;
+                };
             } else {
-                watchVideoButton.style.display = 'none'; // Oculta o botão se não houver vídeos
-                alert('Não há links de vídeo disponíveis.'); // Mensagem de alerta
+                watchVideoButton.style.display = 'none';
             }
         }
 
-        document.getElementById('watchVideoButton').onclick = function() {
-            const userIndex = registeredUsers.findIndex(user => user.username === currentUser.username); // Usa currentUser
-            if (registeredUsers[userIndex].videos.length > 0) {
-                const videoLink = registeredUsers[userIndex].videos[0]; // Assumindo que você quer assistir ao primeiro vídeo
-                window.open(videoLink, '_blank'); // Redireciona para o link do vídeo
-                registeredUsers[userIndex].coins += 10; // Adiciona moedas ao usuário
-                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers)); // Salvar no Local Storage
-                document.getElementById('coinCount').textContent = registeredUsers[userIndex].coins; // Atualiza a contagem de moedas
-                displayVideos(userIndex); // Atualiza a lista de vídeos
-                updateWatchButton(); // Atualiza o botão de assistir vídeo
-            } else {
-                alert('Não há links de vídeo disponíveis.'); // Mensagem de alerta
-            }
-        };
-
-        document.getElementById('adminLink').onclick = function() {
+        function showVideoContainer() {
             document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('adminContainer').style.display = 'block'; // Mostrar a tela de login de admin
-        };
-
-        document.getElementById('adminForm').onsubmit = function(event) {
-            event.preventDefault();
-            const adminUserInput = document.getElementById('adminUser').value;
-            const adminPassInput = document.getElementById('adminPass').value;
-
-            // Verifica as credenciais do admin
-            if (adminUserInput === 'admin' && adminPassInput === 'password') {
-                alert('Login de admin bem-sucedido!');
-                document.getElementById('adminContainer').style.display = 'none';
-                displayRegisteredUsers();
-            } else {
-                alert('Credenciais de admin inválidas.');
-            }
-        };
-
-        function displayRegisteredUsers() {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-            registeredUsers.forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.textContent = `Usuário: ${user.username}, E-mail: ${user.email}, Moedas: ${user.coins}`;
-                userList.appendChild(userItem);
-            });
-            userList.style.display = 'block';
+            document.getElementById('videoContainer').style.display = 'block';
+            document.getElementById('coinCount').textContent = currentUser.coins;
+            document.getElementById('coinDisplay').style.display = 'block';
+            document.getElementById('logoutButton').style.display = 'block'; // Mostrar botão de logout
+            displayVideos();
         }
 
-        function displayOtherUsersVideos(currentUser) {
-            const otherUsersVideos = document.getElementById('otherUsersVideos');
-            otherUsersVideos.innerHTML = '';
-            registeredUsers.forEach(user => {
-                if (user !== currentUser) {
-                    user.videos.forEach(video => {
-                        const videoItem = document.createElement('div');
-                        videoItem.textContent = `Usuário: ${user.username}, Link: ${video}`;
-                        otherUsersVideos.appendChild(videoItem);
-                    });
-                }
-            });
-        }
+        document.getElementById('logoutButton').onclick = function() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            alert('Você saiu da conta!');
+            document.getElementById('videoContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('logoutButton').style.display = 'none'; // Esconde botão de logout
+        };
 
-        // Redireciona para a tela de login quando clicado
-        document.getElementById('loginLink').onclick = function(event) {
-            event.preventDefault();
+        document.getElementById('loginLink').onclick = function() {
             document.getElementById('registrationContainer').style.display = 'none';
             document.getElementById('loginContainer').style.display = 'block';
         };
 
-        // Redireciona para a tela de registro quando clicado
-        document.getElementById('registerLink').onclick = function(event) {
-            event.preventDefault();
+        document.getElementById('registerLink').onclick = function() {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('registrationContainer').style.display = 'block';
-        };
-
-        // Função para sair da conta
-        document.getElementById('logoutButton').onclick = function() {
-            currentUser = null; // Limpa o usuário atual
-            localStorage.removeItem('currentUser'); // Remove do Local Storage
-            document.getElementById('videoContainer').style.display = 'none'; // Oculta a tela de vídeos
-            document.getElementById('loginContainer').style.display = 'block'; // Redireciona para a tela de login
-            document.getElementById('logoutButton').style.display = 'none'; // Oculta o botão de logout
         };
     </script>
 </body>
