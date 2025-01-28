@@ -34,7 +34,7 @@
             text-align: center;
         }
 
-        input, button {
+        input, button, select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -53,181 +53,127 @@
             cursor: not-allowed;
         }
 
-        .link-button {
-            background: none;
-            border: none;
-            color: #007bff;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 0;
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
         }
 
-        .admin-list {
-            margin: 10px 0;
-            padding: 0;
-            list-style-type: none;
+        .admin-table th, .admin-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
         }
 
-        .admin-list li {
-            margin-bottom: 10px;
+        .admin-table th {
+            background-color: #007bff;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Registro -->
-    <div class="container" id="register">
-        <h1>Registrar</h1>
-        <input type="text" id="reg-username" placeholder="Nome de usuário" required>
-        <input type="email" id="reg-email" placeholder="E-mail" required>
-        <input type="password" id="reg-password" placeholder="Senha" required>
-        <button onclick="registerUser()">Registrar</button>
-        <p>Já tem uma conta? <button class="link-button" onclick="showScreen('login')">Faça login aqui</button>.</p>
-    </div>
-
-    <!-- Tela de Seguir Contas -->
-    <div class="container" id="follow">
-        <h1>Siga Estas Contas</h1>
-        <a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank">Seguir Conta 1</a>
-        <a href="https://www.tiktok.com/@mentecuriosabia?_t=ZM-8tRkfoPlDNe&_r=1" target="_blank">Seguir Conta 2</a>
-        <button id="continue-button" disabled onclick="showScreen('login')">Continuar</button>
-    </div>
-
-    <!-- Tela de Login -->
-    <div class="container" id="login">
-        <h1>Login</h1>
-        <input type="text" id="login-username" placeholder="Usuário ou E-mail" required>
-        <input type="password" id="login-password" placeholder="Senha" required>
-        <button onclick="loginUser()">Entrar</button>
-        <p>Não tem uma conta? <button class="link-button" onclick="showScreen('register')">Registre-se aqui</button>.</p>
-        <p id="login-error" style="color: red; display: none;">Credenciais inválidas.</p>
-    </div>
-
-    <!-- Tela de Adicionar e Assistir Vídeos -->
-    <div class="container" id="main">
-        <h1>Bem-vindo!</h1>
-        <h2>Adicionar Vídeo</h2>
-        <input type="url" id="video-url" placeholder="Link do vídeo">
-        <button onclick="addVideo()">Adicionar Vídeo</button>
-        <h2>Assistir Vídeos</h2>
-        <div id="video-list"></div>
-        <button onclick="logout()">Sair</button>
+    <!-- Tela de Login do Administrador -->
+    <div class="container" id="admin-login">
+        <h1>Login do Administrador</h1>
+        <input type="text" id="admin-username" placeholder="Usuário" required>
+        <input type="password" id="admin-password" placeholder="Senha" required>
+        <button onclick="loginAdmin()">Entrar</button>
+        <p id="admin-login-error" style="color: red; display: none;">Credenciais inválidas.</p>
     </div>
 
     <!-- Tela de Administração -->
-    <div class="container" id="admin">
-        <h1>Administração</h1>
-        <ul class="admin-list" id="user-list"></ul>
-        <h2>Adicionar Vídeo Grátis</h2>
-        <input type="url" id="admin-video-url" placeholder="Link do vídeo">
-        <button onclick="addFreeVideo()">Adicionar</button>
-        <button onclick="logout()">Sair</button>
+    <div class="container" id="admin-panel">
+        <h1>Painel Administrativo</h1>
+        <h2>Usuários Registrados</h2>
+        <table class="admin-table" id="user-table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Senha</th>
+                    <th>Moedas</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <button onclick="logoutAdmin()">Sair</button>
     </div>
 
     <script>
         let users = [];
-        let videos = [];
-        let currentUser = null;
+        let videos = {};
+        let currentAdmin = false;
 
         function showScreen(screenId) {
             document.querySelectorAll('.container').forEach(screen => screen.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
-        function registerUser() {
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-
-            if (username && email && password) {
-                users.push({ username, email, password, coins: 0 });
-                alert('Usuário registrado com sucesso!');
-                showScreen('follow');
-            } else {
-                alert('Preencha todos os campos!');
-            }
-        }
-
-        function loginUser() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
+        function loginAdmin() {
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
 
             if (username === 'Danilo' && password === '12022005') {
-                showAdminPanel();
-                return;
-            }
-
-            const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
-
-            if (user) {
-                currentUser = user;
-                showScreen('main');
+                currentAdmin = true;
+                updateAdminTable();
+                showScreen('admin-panel');
             } else {
-                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('admin-login-error').style.display = 'block';
             }
         }
 
-        function logout() {
-            currentUser = null;
-            showScreen('login');
+        function logoutAdmin() {
+            currentAdmin = false;
+            showScreen('admin-login');
         }
 
-        function addVideo() {
-            const videoUrl = document.getElementById('video-url').value;
-
-            if (videoUrl) {
-                videos.push(videoUrl);
-                alert('Vídeo adicionado com sucesso!');
-                document.getElementById('video-url').value = '';
-                updateVideoList();
-            } else {
-                alert('Insira um link válido!');
-            }
-        }
-
-        function updateVideoList() {
-            const videoList = document.getElementById('video-list');
-            videoList.innerHTML = '';
-            videos.forEach(video => {
-                const videoDiv = document.createElement('div');
-                videoDiv.innerHTML = `<a href="${video}" target="_blank">${video}</a>`;
-                videoList.appendChild(videoDiv);
-            });
-        }
-
-        function showAdminPanel() {
-            const userList = document.getElementById('user-list');
-            userList.innerHTML = '';
+        function updateAdminTable() {
+            const tableBody = document.querySelector('#user-table tbody');
+            tableBody.innerHTML = '';
 
             users.forEach((user, index) => {
-                const li = document.createElement('li');
-                li.textContent = `Usuário: ${user.username}, Moedas: ${user.coins}`;
-                userList.appendChild(li);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.password}</td>
+                    <td>${user.coins}</td>
+                    <td>
+                        <button onclick="deleteUser(${index})">Excluir</button>
+                        <button onclick="editCoins(${index})">Alterar Moedas</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
             });
-
-            showScreen('admin');
         }
 
-        function addFreeVideo() {
-            const videoUrl = document.getElementById('admin-video-url').value;
-
-            if (videoUrl) {
-                videos.push(videoUrl);
-                alert('Vídeo gratuito adicionado com sucesso!');
-                document.getElementById('admin-video-url').value = '';
-                updateVideoList();
-            } else {
-                alert('Insira um link válido!');
+        function deleteUser(index) {
+            if (confirm(`Tem certeza que deseja excluir o usuário ${users[index].username}?`)) {
+                users.splice(index, 1);
+                updateAdminTable();
+                alert('Usuário excluído com sucesso!');
             }
         }
 
-        // Habilitar botão "Continuar" após seguir contas
-        document.querySelectorAll('#follow a').forEach(link => {
-            link.addEventListener('click', () => {
-                document.getElementById('continue-button').disabled = false;
-            });
-        });
+        function editCoins(index) {
+            const newCoins = prompt(`Quantas moedas deseja atribuir ao usuário ${users[index].username}?`, users[index].coins);
+            if (newCoins !== null) {
+                const coins = parseInt(newCoins);
+                if (!isNaN(coins)) {
+                    users[index].coins = coins;
+                    updateAdminTable();
+                    alert('Moedas atualizadas com sucesso!');
+                } else {
+                    alert('Por favor, insira um número válido.');
+                }
+            }
+        }
 
-        showScreen('register');
+        // Usuário inicial para teste
+        users.push({ username: 'teste', email: 'teste@teste.com', password: '123456', coins: 10 });
+
+        showScreen('admin-login');
     </script>
 </body>
 </html>
