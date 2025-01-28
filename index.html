@@ -3,129 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Usuários</title>
+    <title>Registro de Usuário</title>
     <style>
-        /* Estilos gerais */
         body {
-            font-family: 'Poppins', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: #fff;
+            margin: 0;
         }
-
-        /* Container principal */
         .container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            animation: fadeIn 1s ease-in-out;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
-
-        /* Títulos */
         h2 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: #fff;
+            text-align: center;
+            color: #333;
         }
-
-        /* Inputs */
         input[type="text"], input[type="email"], input[type="password"] {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.25);
-            color: #fff;
-            font-size: 1rem;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Botões */
         button {
             width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-            background: #ff6f61;
+            padding: 10px;
+            background-color: #28a745;
             color: white;
-            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background 0.3s ease-in-out;
         }
-
         button:hover {
-            background: #e65b50;
+            background-color: #218838;
         }
-
-        /* Links */
+        .link {
+            text-align: center;
+            margin-top: 10px;
+        }
         .link a {
-            color: #ffd700;
+            color: #007bff;
             text-decoration: none;
-            font-size: 0.9rem;
         }
-
         .link a:hover {
             text-decoration: underline;
         }
-
-        /* Botões de seguir */
-        .follow-button {
-            margin: 10px 0;
-            padding: 10px;
-            background: #28a745;
-            font-size: 1rem;
+        .follow-container, .login-container, .video-container, .admin-container {
+            display: none; /* Inicialmente oculto */
+            text-align: center;
+            margin-top: 20px;
         }
-
-        .follow-button:hover {
-            background: #218838;
+        #otherVideos {
+            margin-top: 20px;
         }
-
-        /* Sessão de vídeos */
-        #videoList div {
-            background: rgba(255, 255, 255, 0.25);
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
+        .admin-button {
+            margin-top: 10px;
+            background-color: #dc3545;
         }
-
-        /* Listas e tabelas */
-        .user-list div {
-            margin: 10px 0;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 5px;
+        .admin-button:hover {
+            background-color: #c82333;
         }
-
-        /* Efeitos de entrada */
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .user-list {
+            margin-top: 20px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <!-- Aqui, insira todo o conteúdo funcional da última versão que mandei anteriormente -->
     <div class="container" id="registrationContainer">
         <h2>Registrar</h2>
         <form id="registrationForm">
@@ -139,7 +90,7 @@
         </div>
     </div>
 
-    <div class="container follow-container" id="followContainer" style="display: none;">
+    <div class="container follow-container" id="followContainer">
         <h2>Siga as Contas</h2>
         <p>Siga as duas contas abaixo:</p>
         <p><a href="https://www.tiktok.com/@thamyresp06?_t=ZM-8tAVH9k5Gh3&_r=1" target="_blank" id="link1">Conta 1</a></p>
@@ -149,7 +100,7 @@
         <button id="continueButton" disabled>Continuar</button>
     </div>
 
-    <div class="container login-container" id="loginContainer" style="display: none;">
+    <div class="container login-container" id="loginContainer">
         <h2>Login</h2>
         <form id="loginForm">
             <input type="text" id="loginEmail" placeholder="Usuário ou E-mail" required>
@@ -164,7 +115,7 @@
         </div>
     </div>
 
-    <div class="container video-container" id="videoContainer" style="display: none;">
+    <div class="container video-container" id="videoContainer">
         <h2>Adicionar Link de Vídeo</h2>
         <form id="videoForm">
             <input type="text" id="videoLink" placeholder="Cole o link do vídeo" required>
@@ -179,7 +130,7 @@
         </div>
     </div>
 
-    <div class="container admin-container" id="adminContainer" style="display: none;">
+    <div class="container admin-container" id="adminContainer">
         <h2>Login de Admin</h2>
         <form id="adminForm">
             <input type="text" id="adminUser" placeholder="Usuário" required>
@@ -190,7 +141,163 @@
     </div>
 
     <script>
-        /* Todo o JavaScript da versão funcional permanece igual */
+        let followedLinks = new Set();
+        let registeredUsers = []; // Armazenar usuários registrados
+        let videoLinks = []; // Armazenar links de vídeo por usuário
+        let coins = 0;
+        const adminUser = 'Danilo';
+        const adminPassword = '12022005';
+
+        document.getElementById('registrationForm').onsubmit = function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Adicionar usuário registrado
+            registeredUsers.push({ username, email, password, videos: [], coins: 0 });
+            alert('Usuário registrado: ' + username);
+
+            // Mostrar a tela de seguir contas
+            document.getElementById('registrationContainer').style.display = 'none';
+            document.getElementById('followContainer').style.display = 'block';
+        };
+
+        function followAccount(link) {
+            followedLinks.add(link);
+            window.open(link, '_blank'); // Redireciona para o perfil
+
+            // Verifica se ambos os links foram seguidos
+            if (followedLinks.size === 2) {
+                document.getElementById('continueButton').disabled = false; // Habilita o botão
+            }
+        }
+
+        document.getElementById('continueButton').onclick = function() {
+            document.getElementById('followContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block'; // Mostra a tela de login
+        };
+
+        document.getElementById('loginForm').onsubmit = function(event) {
+            event.preventDefault();
+            const loginEmail = document.getElementById('loginEmail').value;
+            const loginPassword = document.getElementById('loginPassword').value;
+
+            // Verifica se os dados de login estão corretos
+            const user = registeredUsers.find(user => (user.username === loginEmail || user.email === loginEmail) && user.password === loginPassword);
+            if (user) {
+                alert('Login bem-sucedido!'); // Aqui você pode redirecionar para a próxima página
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('videoContainer').style.display = 'block'; // Mostrar a tela de adicionar link de vídeo
+                displayOtherUsersVideos(user); // Mostrar vídeos de outros usuários
+
+                // Habilitar o botão de adicionar vídeo se o usuário tiver moedas suficientes
+                document.getElementById('addVideoButton').disabled = user.coins < 50;
+            } else {
+                alert('Credenciais inválidas.'); // Mensagem de erro
+            }
+        };
+
+        document.getElementById('loginLink').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('registrationContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block'; // Mostra a tela de login
+        };
+
+        document.getElementById('registerLink').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registrationContainer').style.display = 'block'; // Volta para a tela de registro
+        };
+
+        document.getElementById('adminLink').onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContainer').style.display = 'block'; // Mostra a tela de login do admin
+        };
+
+        document.getElementById('adminForm').onsubmit = function(event) {
+            event.preventDefault();
+            const adminUserInput = document.getElementById('adminUser').value;
+            const adminPassInput = document.getElementById('adminPass').value;
+
+            // Verifica as credenciais do administrador
+            if (adminUserInput === adminUser && adminPassInput === adminPassword) {
+                alert('Login de administrador bem-sucedido!');
+                document.getElementById('adminContainer').style.display = 'none';
+
+                // Exibir lista de usuários
+                const userList = document.getElementById('userList');
+                userList.innerHTML = ''; // Limpa a lista existente
+                registeredUsers.forEach(user => {
+                    userList.innerHTML += `<div>${user.username} - Moedas: ${user.coins} <button onclick="deleteUser('${user.username}')">Excluir</button></div>`;
+                });
+                userList.style.display = 'block';
+            } else {
+                alert('Credenciais de administrador inválidas.');
+            }
+        };
+
+        function deleteUser(username) {
+            registeredUsers = registeredUsers.filter(user => user.username !== username); // Excluir o usuário
+            alert('Usuário excluído: ' + username);
+            // Atualiza a lista de usuários
+            document.getElementById('userList').innerHTML = '';
+            registeredUsers.forEach(user => {
+                document.getElementById('userList').innerHTML += `<div>${user.username} - Moedas: ${user.coins} <button onclick="deleteUser('${user.username}')">Excluir</button></div>`;
+            });
+        }
+
+        document.getElementById('videoForm').onsubmit = function(event) {
+            event.preventDefault();
+            const videoLink = document.getElementById('videoLink').value;
+            const currentUser = registeredUsers.find(user => user.username === document.getElementById('loginEmail').value); // Obter o usuário atual
+
+            if (currentUser.coins >= 50) { // Verifica se o usuário tem moedas suficientes
+                currentUser.videos.push(videoLink);
+                alert('Link de vídeo adicionado!');
+
+                // Atualizar lista de vídeos
+                displayOtherUsersVideos(currentUser);
+                document.getElementById('videoLink').value = ''; // Limpar campo de entrada
+            } else {
+                alert('Você precisa de pelo menos 50 moedas para adicionar um link.');
+            }
+        };
+
+        function displayOtherUsersVideos(currentUser) {
+            const otherUsersVideos = document.getElementById('otherUsersVideos');
+            otherUsersVideos.innerHTML = ''; // Limpar lista existente
+
+            registeredUsers.forEach(user => {
+                if (user !== currentUser) { // Exibir vídeos apenas de outros usuários
+                    user.videos.forEach(video => {
+                        const videoItem = document.createElement('div');
+                        videoItem.innerHTML = `<a href="${video}" target="_blank">${video}</a> <button onclick="watchVideo('${video}')">Assistir</button>`;
+                        otherUsersVideos.appendChild(videoItem);
+                    });
+                }
+            });
+        }
+
+        function watchVideo(link) {
+            // Incrementa as moedas
+            coins += 10;
+            document.getElementById('coinCount').innerText = coins;
+            document.getElementById('coinDisplay').style.display = 'block'; // Exibir contagem de moedas
+
+            // Remove o link do vídeo da lista
+            const otherUsersVideos = document.getElementById('otherUsersVideos');
+            for (let i = 0; i < otherUsersVideos.children.length; i++) {
+                if (otherUsersVideos.children[i].querySelector('a').href === link) {
+                    otherUsersVideos.removeChild(otherUsersVideos.children[i]);
+                    break;
+                }
+            }
+
+            // Redireciona para o link do vídeo
+            window.open(link, '_blank');
+        }
     </script>
 </body>
 </html>
